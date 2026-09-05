@@ -15,6 +15,24 @@ import storyImg from '../assets/images/story.png';
 import chatImg from '../assets/images/chat.png';
 import cloud2Img from '../assets/images/cloud2.png';
 import patternImg from '../assets/images/pattern.png';
+import { HeroLoader } from './HeroLoader';
+
+const HERO_IMAGES = [
+  layer0,
+  layer1,
+  layer2,
+  layer3,
+  layer4,
+  characterNoEyeImg,
+  characterImg,
+  poleImg,
+  boardImg,
+  eyeImg,
+  storyImg,
+  chatImg,
+  cloud2Img,
+  patternImg,
+];
 
 interface LayerConfig {
   id: number | string;
@@ -133,6 +151,56 @@ export const Hero: React.FC = () => {
   const [storyHovered, setStoryHovered] = useState(false);
   const [chatHovered, setChatHovered] = useState(false);
 
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
+  const [isImagesLoaded, setIsImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    let count = 0;
+    const total = HERO_IMAGES.length;
+
+    const fallbackTimer = setTimeout(() => {
+      if (isMounted) {
+        setLoadedImageCount(total);
+        setIsImagesLoaded(true);
+      }
+    }, 6000);
+
+    HERO_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+
+      const handleLoad = () => {
+        if (!isMounted) return;
+        count++;
+        setLoadedImageCount(count);
+
+        if (src === characterNoEyeImg && img.naturalWidth && img.naturalHeight) {
+          charNaturalSize.current = { w: img.naturalWidth, h: img.naturalHeight };
+        }
+
+        if (count >= total) {
+          clearTimeout(fallbackTimer);
+          setTimeout(() => {
+            if (isMounted) setIsImagesLoaded(true);
+          }, 200);
+        }
+      };
+
+      if (img.complete) {
+        handleLoad();
+      } else {
+        img.onload = handleLoad;
+        img.onerror = handleLoad;
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(fallbackTimer);
+    };
+  }, []);
+
   useEffect(() => {
     let animationFrameId: number;
 
@@ -189,6 +257,11 @@ export const Hero: React.FC = () => {
         animation: isExiting ? 'heroZoomBlurOut 0.6s cubic-bezier(0.4, 0, 1, 1) forwards' : undefined,
       }}
     >
+      <HeroLoader
+        progress={(loadedImageCount / HERO_IMAGES.length) * 100}
+        isDone={isImagesLoaded}
+      />
+
       {LAYERS.map((layer) => {
         if (isMobile && layer.id === 'board') return null;
 
