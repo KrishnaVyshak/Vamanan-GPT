@@ -117,16 +117,12 @@ const LAYERS: LayerConfig[] = [
   },
 ];
 
-// Eye positions as % of the character image dimensions (measured from image top-left corner).
-// These values are derived from the original character artwork and never change.
-const EYE_LEFT_PERCENT  = { x: 25.28, y: 31.4 }; // left  eye (from viewer's perspective: character's right)
-const EYE_RIGHT_PERCENT = { x: 38.6, y: 30.3 }; // right eye
+const EYE_LEFT_PERCENT  = { x: 25.28, y: 31.4 };
+const EYE_RIGHT_PERCENT = { x: 38.6, y: 30.3 };
 
 export const Hero: React.FC = () => {
   const { navigateWithTransition, isExiting } = usePageTransition();
   const containerRef = useRef<HTMLDivElement>(null);
-  // Natural dimensions of the character image — read once on load, never changes.
-  // Used to compute eye positions analytically without any DOM reads during animation.
   const charNaturalSize = useRef<{ w: number; h: number } | null>(null);
 
   const targetMouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -142,7 +138,6 @@ export const Hero: React.FC = () => {
 
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      // Rect will be recalculated on the next animation tick
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -182,7 +177,6 @@ export const Hero: React.FC = () => {
     };
   }, []);
 
-
   const mouseX = currentMouse.current.x;
   const mouseY = currentMouse.current.y;
 
@@ -196,21 +190,17 @@ export const Hero: React.FC = () => {
       }}
     >
       {LAYERS.map((layer) => {
-        // On mobile: hide pole (board layer) and swap character image
         if (isMobile && layer.id === 'board') return null;
 
         const basePxX = layer.baseOffsetXPercent ? (window.innerWidth * (layer.baseOffsetXPercent / 100)) : 0;
         const translateX = mouseX * layer.factorX + basePxX;
         const translateY = mouseY * layer.factorY + (layer.baseOffsetY || 0);
 
-        // On mobile, use character.png (with eyes) instead of character-no-eye.png
         const src = (isMobile && layer.id === 'character') ? characterImg : layer.src;
 
         const isBackgroundLayer = typeof layer.id === 'number';
 
-        // On mobile, scale background layers more to fill portrait viewport
         const scaleClass = (isMobile && isBackgroundLayer) ? 'scale-[2.2]' : layer.scale;
-        // On mobile, anchor background images to top so sky/horizon content stays visible
         const objectPosClass = (isMobile && isBackgroundLayer) ? 'object-top' : (layer.objectPos || 'object-center');
 
         const isCharacterLayer = layer.id === 'character';
@@ -238,37 +228,26 @@ export const Hero: React.FC = () => {
         );
       })}
 
-      {/* Eyes — anchored at a STATIC left/top (no mouse in it = no pixel snapping).
-          All mouse-driven movement (parallax + eye shift) goes through transform,
-          which uses sub-pixel GPU compositing for perfectly smooth motion. */}
       {!isMobile && charNaturalSize.current && (() => {
         const { w: naturalW, h: naturalH } = charNaturalSize.current!;
         const W = window.innerWidth;
         const H = window.innerHeight;
 
-        // Character layer constants (must match LAYERS config exactly)
         const CHAR_FACTOR_X   = 6;
         const CHAR_FACTOR_Y   = 6;
-        const CHAR_BASE_X_PCT = 26;  // baseOffsetXPercent
-        const CHAR_BASE_Y     = 40;  // baseOffsetY
+        const CHAR_BASE_X_PCT = 26;
+        const CHAR_BASE_Y     = 40;
 
-        // object-contain scale and rendered size (viewport is the container)
         const containScale = Math.min(W / naturalW, H / naturalH);
         const renderedW    = naturalW * containScale;
         const renderedH    = naturalH * containScale;
 
-        // Horizontal centering and bottom-align offsets within the viewport container
         const offsetX = (W - renderedW) / 2;
         const offsetY = H - renderedH;
 
-        // Static base: position of the image's top-left at mouseX=0, mouseY=0.
-        // This never changes until the window resizes, so left/top are constant
-        // → no pixel-snapping during animation.
         const baseImgLeft = W * (CHAR_BASE_X_PCT / 100) + offsetX;
         const baseImgTop  = CHAR_BASE_Y + offsetY;
 
-        // Eye shift: parallax (character moves) + eye wiggle combined into one
-        // transform value. transform uses sub-pixel GPU rendering → buttery smooth.
         const maxShift = renderedW * 0.0089;
         const totalShiftX = mouseX * CHAR_FACTOR_X + mouseX * maxShift;
         const totalShiftY = mouseY * CHAR_FACTOR_Y + mouseY * maxShift;
@@ -276,7 +255,6 @@ export const Hero: React.FC = () => {
         const eyeScale = containScale;
 
         return [EYE_LEFT_PERCENT, EYE_RIGHT_PERCENT].map((eyePct, idx) => {
-          // Static pixel anchor — computed from viewport size + image geometry, no mouse
           const staticLeft = baseImgLeft + renderedW * (eyePct.x / 100);
           const staticTop  = baseImgTop  + renderedH * (eyePct.y / 100);
 
@@ -285,11 +263,9 @@ export const Hero: React.FC = () => {
               key={idx}
               className="absolute pointer-events-none"
               style={{
-                // Static — only changes on window resize, never on mouse move
                 left: `${staticLeft}px`,
                 top:  `${staticTop}px`,
                 zIndex: 10,
-                // All motion here: GPU-composited sub-pixel smooth
                 transform: `translate(calc(-50% + ${totalShiftX}px), calc(-50% + ${totalShiftY}px)) scale(${eyeScale})`,
                 transformOrigin: 'center center',
                 willChange: 'transform',
@@ -380,7 +356,6 @@ export const Hero: React.FC = () => {
             draggable={false}
           />
 
-          {/* Clickable hotspot: Story (left arrow sign — top-left portion of image) */}
           <div
             style={{
               position: 'absolute',
@@ -390,15 +365,12 @@ export const Hero: React.FC = () => {
               height: '45%',
               pointerEvents: 'auto',
               cursor: 'pointer',
-              // Uncomment to debug hit area:
-              // background: 'rgba(255,0,0,0.25)',
             }}
             onClick={() => navigateWithTransition('/story')}
             aria-label="Go to Story"
             role="button"
           />
 
-          {/* Clickable hotspot: Chat (right arrow sign — top-right portion of image) */}
           <div
             style={{
               position: 'absolute',
@@ -408,8 +380,6 @@ export const Hero: React.FC = () => {
               height: '45%',
               pointerEvents: 'auto',
               cursor: 'pointer',
-              // Uncomment to debug hit area:
-              // background: 'rgba(0,0,255,0.25)',
             }}
             onClick={() => navigateWithTransition('/chat')}
             aria-label="Go to Chat"
@@ -445,7 +415,6 @@ export const Hero: React.FC = () => {
           VamananGPT
         </h1>
 
-        {/* Cloud2 floats in front at bottom-right corner of the heading */}
         <img
           src={cloud2Img}
           alt="Cloud"
@@ -479,7 +448,6 @@ export const Hero: React.FC = () => {
         }
       `}</style>
 
-      {/* Pattern overlay at top-left corner */}
       <img
         src={patternImg}
         alt="Pattern"
@@ -493,8 +461,6 @@ export const Hero: React.FC = () => {
           opacity: 0.4,
         }}
       />
-
-
     </div>
   );
 };

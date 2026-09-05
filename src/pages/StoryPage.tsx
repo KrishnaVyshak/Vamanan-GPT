@@ -13,10 +13,6 @@ import interestingImg from '../assets/images/interesting.png';
 import surprizedImg from '../assets/images/surprized.png';
 import wowImg from '../assets/images/wow.png';
 
-// ---------------------------------------------------------------------------
-// Parallax layers — identical to ChatPage
-// ---------------------------------------------------------------------------
-
 interface LayerConfig {
   id: number | string;
   src: string;
@@ -41,17 +37,13 @@ const PARALLAX_LAYERS: LayerConfig[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Story chapters — funny retelling of Vamanan & Mahabali
-// ---------------------------------------------------------------------------
-
 interface Chapter {
   id: number;
   emoji: string;
   title: string;
   body: string;
   funFact: string;
-  sprite: string;   // which sprite to show while reading
+  sprite: string;
 }
 
 const CHAPTERS: Chapter[] = [
@@ -105,10 +97,6 @@ const CHAPTERS: Chapter[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 export const StoryPage: React.FC = () => {
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -116,7 +104,6 @@ export const StoryPage: React.FC = () => {
   const targetMouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const currentMouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Active chapter index for sprite highlight
   const [activeChapter, setActiveChapter] = useState(0);
 
   const spriteMap: Record<string, string> = {
@@ -127,7 +114,6 @@ export const StoryPage: React.FC = () => {
     wow: wowImg,
   };
 
-  // Parallax loop
   useEffect(() => {
     let rafId: number;
     const onResize = () => setIsMobile(window.innerWidth < 768);
@@ -165,7 +151,6 @@ export const StoryPage: React.FC = () => {
       className="relative w-screen overflow-hidden bg-slate-950 select-none"
       style={{ height: '100dvh', animation: 'chatPageZoomIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both' }}
     >
-      {/* ── Parallax background ── */}
       {PARALLAX_LAYERS.map(layer => {
         const tx = mx * layer.factorX;
         const ty = my * layer.factorY + (layer.baseOffsetY || 0);
@@ -186,20 +171,17 @@ export const StoryPage: React.FC = () => {
         );
       })}
 
-      {/* ── Sky-haze gradient overlay (same as ChatPage) ── */}
       <div
         className="absolute inset-0 pointer-events-none select-none"
         style={{ zIndex: 10, background: 'linear-gradient(to bottom, transparent 0%, #B6ECFF 100%)' }}
       />
 
-      {/* ── Pattern overlay ── */}
       <img
         src={patternImg} alt="Pattern" draggable={false}
         className="absolute top-0 left-0 pointer-events-none select-none"
         style={{ zIndex: 20, mixBlendMode: 'overlay', width: '160px', height: 'auto', opacity: 0.4 }}
       />
 
-      {/* ── Header — click to go home ── */}
       <div className="absolute top-5 left-4 md:top-12 md:left-12 z-30 select-none flex flex-col">
         <button
           onClick={() => navigate('/')}
@@ -215,13 +197,11 @@ export const StoryPage: React.FC = () => {
         </button>
       </div>
 
-      {/* ── Character sprite — desktop only ── */}
       {!isMobile && (
         <div
           className="absolute left-12 z-20 pointer-events-none select-none"
           style={{ bottom: '-20px', width: 'clamp(230px, 34vw, 450px)', position: 'absolute' }}
         >
-          {/* invisible sizer */}
           <img src={currentSprite} alt="" aria-hidden draggable={false} className="w-full h-auto invisible" />
           {Object.entries(spriteMap).map(([key, src]) => (
             <img
@@ -239,7 +219,6 @@ export const StoryPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Glassmorphism panel ── */}
       <div
         className="absolute rounded-[2rem] flex flex-col"
         style={{
@@ -254,7 +233,6 @@ export const StoryPage: React.FC = () => {
           boxShadow: '0px 84px 72px -68px rgba(0, 0, 0, 0.12)',
         }}
       >
-        {/* Radial gradient border — same trick as ChatPage */}
         <div
           className="absolute inset-0 rounded-[2rem] pointer-events-none"
           style={{
@@ -266,7 +244,6 @@ export const StoryPage: React.FC = () => {
           }}
         />
 
-        {/* Inner cream panel */}
         <div
           className="flex-1 overflow-hidden rounded-[calc(2rem-10px)] z-10 flex flex-col"
           style={{
@@ -278,10 +255,8 @@ export const StoryPage: React.FC = () => {
             backgroundClip: 'padding-box, border-box',
           }}
         >
-          {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-4">
 
-            {/* Page title */}
             <div className="text-center pt-2 pb-1">
               <p
                 className="font-['Geist',sans-serif] font-medium tracking-widest uppercase text-[0.68rem] mb-2"
@@ -301,11 +276,9 @@ export const StoryPage: React.FC = () => {
               >
                 A tale of cosmic real-estate, divine shapeshifting, and a king who should have read the fine print. 📜
               </p>
-              {/* divider */}
               <div className="mx-auto mt-4 mb-1" style={{ width: '60px', height: '1.5px', background: 'linear-gradient(90deg, transparent, #00C3FF88, transparent)', borderRadius: '1px' }} />
             </div>
 
-            {/* Chapter cards */}
             {CHAPTERS.map((chapter, i) => {
               const isActive = activeChapter === i;
               return (
@@ -328,7 +301,6 @@ export const StoryPage: React.FC = () => {
                     transform: isActive ? 'scale(1.01)' : 'scale(1)',
                   }}
                 >
-                  {/* Chapter header row */}
                   <div className="flex items-center gap-3 mb-1">
                     <span
                       className="font-['Geist',sans-serif] font-semibold text-[0.65rem] uppercase tracking-widest px-2.5 py-0.5 rounded-full"
@@ -352,7 +324,6 @@ export const StoryPage: React.FC = () => {
                     </h3>
                   </div>
 
-                  {/* Expandable body */}
                   <div
                     style={{
                       maxHeight: isActive ? '500px' : '0px',
@@ -367,7 +338,6 @@ export const StoryPage: React.FC = () => {
                       {chapter.body}
                     </p>
 
-                    {/* Fun fact */}
                     <div
                       className="mt-3 rounded-xl px-4 py-3"
                       style={{
@@ -384,7 +354,6 @@ export const StoryPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Collapsed preview line */}
                   {!isActive && (
                     <p
                       className="font-['Geist',sans-serif] m-0 mt-1"
@@ -403,7 +372,6 @@ export const StoryPage: React.FC = () => {
               );
             })}
 
-            {/* Epilogue */}
             <div
               className="rounded-2xl text-center py-6 px-5 mt-1 mb-2"
               style={{
@@ -448,7 +416,6 @@ export const StoryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Animations ── */}
       <style>{`
         @keyframes chatPageZoomIn {
           0%   { opacity: 0; transform: scale(0.96); filter: blur(12px); }

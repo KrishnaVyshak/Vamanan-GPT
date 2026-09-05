@@ -4,10 +4,6 @@ import { Hero } from './components/Hero';
 import { ChatPage } from './pages/ChatPage';
 import { StoryPage } from './pages/StoryPage';
 
-// ---------------------------------------------------------------------------
-// Transition Context
-// ---------------------------------------------------------------------------
-
 interface TransitionContextValue {
   navigateWithTransition: (to: string) => void;
   isExiting: boolean;
@@ -22,20 +18,14 @@ export function usePageTransition() {
   return useContext(TransitionContext);
 }
 
-// ---------------------------------------------------------------------------
-// Inner App — has access to useNavigate
-// ---------------------------------------------------------------------------
-
 function InnerApp() {
   const navigate = useNavigate();
   const [isExiting, setIsExiting] = useState(false);
 
   const navigateWithTransition = useCallback(
     (to: string) => {
-      // Trigger exit animation on current page
       setIsExiting(true);
 
-      // After the exit animation finishes (0.6s), navigate
       setTimeout(() => {
         navigate(to);
         setIsExiting(false);
@@ -56,10 +46,6 @@ function InnerApp() {
     </TransitionContext.Provider>
   );
 }
-
-// ---------------------------------------------------------------------------
-// App root
-// ---------------------------------------------------------------------------
 
 function App() {
   return (
