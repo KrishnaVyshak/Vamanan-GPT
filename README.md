@@ -1,4 +1,4 @@
-# VamananGPT
+![VamananGPT](https://vamanan.krishnavyshak.com/logo_text_repo.png)
 
 VamananGPT is a character chat web app. You talk to Vamanan, the dwarf avatar of Lord Vishnu from Hindu mythology. Vamanan replies in Manglish and speaks in the voice of a witty, playful character from the story of Onam.
 
